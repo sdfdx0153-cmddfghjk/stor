@@ -1,15 +1,24 @@
 {
-  "buildCommand": "npm run build && cp -r public/images dist/images",
-  "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.js": {
-      "memory": 256,
-      "maxDuration": 10
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "app/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     }
-  },
-  "rewrites": [
-    { "source": "/api/products/:id", "destination": "/api/products/[id]" },
-    { "source": "/api/reviews/:id", "destination": "/api/reviews/[id]" },
-    { "source": "/((?!api/|images/).*)", "destination": "/index.html" }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "app/$1"
+    }
   ]
 }
