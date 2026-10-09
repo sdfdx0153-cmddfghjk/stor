@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Ember Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { ink: "#1d1d1f", sub: "#6e6e73", fog: "#f5f5f7", line: "#d2d2d7", azure: "#0071e3", blood: "#d70015" },
+            fontFamily: { sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Inter", "Segoe UI", "sans-serif"] },
+          },
+        },
+      };
+    </script>
+    <style>
+      body { letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; }
+      .field { @apply w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14px] text-ink outline-none transition placeholder:text-sub/50 focus:border-azure focus:ring-4 focus:ring-azure/10; }
+      .label { @apply mb-1.5 block text-[12px] font-semibold text-ink; }
+      .tab-btn { @apply flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium text-sub transition hover:text-ink; }
+      .tab-active { @apply bg-ink text-white hover:text-white; }
+    </style>
+  </head>
+  <body class="min-h-screen bg-fog/60 text-ink">
+    <header class="sticky top-0 z-40 border-b border-black/10 bg-white/80 backdrop-blur-xl">
+      <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div class="flex items-center gap-3">
+          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-ink text-[12px] font-bold text-white">E</span>
+          <div class="leading-tight">
+            <p class="text-[13px] font-semibold">Admin Dashboard</p>
+            <p class="text-[11px] text-sub">Ember Home · WED2C Store</p>
+          </div>
+        </div>
+        <a href="/" class="rounded-full border border-line px-4 py-1.5 text-[12px] font-medium transition hover:border-ink">View Store &nearr;</a>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <% if (message) { %>
+      <div class="mb-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-3.5 text-[13px] font-medium text-green-700">
+        &#10003; <%= message.replace(/\+/g, " ") %>
+      </div>
+      <% } %>
+
+      <!-- Tabs -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex rounded-full border border-black/10 bg-white p-1">
+          <button onclick="switchTab('products')" data-tab="products" class="tab-btn tab-active">Products (<%= products.length %>)</button>
+          <button onclick="switchTab('reviews')" data-tab="reviews" class="tab-btn">Reviews (<%= reviews.length %>)</button>
+          <button onclick="switchTab('settings')" data-tab="settings" class="tab-btn">Flash Sale</button>
+        </div>
+        <button onclick="openModal('add-modal')" class="rounded-full bg-azure px-5 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#0077ed]">+ Add Product</button>
+      </div>
+
+      <!-- ============ PRODUCTS TAB ============ -->
+      <section id="tab-products">
+        <div class="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white">
+          <% if (products.length === 0) { %>
+          <div class="px-6 py-16 text-center">
+            <p class="text-[15px] font-semibold">No products yet</p>
+            <p class="mt-1 text-[13px] text-sub">Add your first WED2C product and it will appear on the storefront right away.</p>
+          </div>
+          <% } %>
+          <% products.forEach(function (p) { %>
+          <div class="flex flex-col gap-4 border-b border-black/5 p-4 last:border-0 sm:p-5 md:flex-row md:items-center">
+            <div class="flex min-w-0 flex-1 items-center gap-4">
+              <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-fog">
+                <img src="<%= p.imageUrl %>" alt="" class="h-full w-full object-cover" loading="lazy" />
+              </div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  <p class="text-[14px] font-semibold"><%= p.name %></p>
+                  <span class="text-[13px] font-medium">$<%= Number(p.price).toFixed(2) %></span>
+                  <% if (p.discountPct) { %>
+                  <span class="rounded-full bg-blood/10 px-2 py-0.5 text-[10px] font-bold text-blood">−<%= p.discountPct %>% · was $<%= Number(p.compareAtPrice).toFixed(2) %></span>
+                  <% } %>
+                </div>
+                <p class="mt-0.5 line-clamp-1 text-[12px] text-sub"><%= p.description %></p>
+                <a href="<%= p.wed2cLink %>" target="_blank" rel="noopener sponsored" class="mt-0.5 inline-block text-[11px] text-azure hover:underline"><%= p.wed2cLink.length > 44 ? p.wed2cLink.slice(0, 44) + "…" : p.wed2cLink %></a>
+              </div>
+            </div>
+            <div class="flex shrink-0 items-center justify-between gap-3 md:justify-end">
+              <span class="rounded-full px-3 py-1 text-[11px] font-bold <%= p.stock <= 0 ? 'bg-black/10 text-sub' : p.stock <= 5 ? 'bg-blood/10 text-blood' : 'bg-[#248a3d]/10 text-[#248a3d]' %>">
+                <%= p.stock <= 0 ? "Sold out" : p.stock + " in stock" %>
+              </span>
+              <div class="flex gap-2">
+                <button onclick="openModal('edit-<%= p._id %>')" class="rounded-full bg-fog px-3.5 py-1.5 text-[12px] font-medium transition hover:bg-black/10">Edit</button>
+                <form action="/admin/delete/<%= p._id %>" method="POST" onsubmit="return confirm('Delete &quot;<%= p.name %>&quot;?');">
+                  <button type="submit" class="rounded-full bg-red-50 px-3.5 py-1.5 text-[12px] font-medium text-red-500 transition hover:bg-red-100">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit modal -->
+          <div id="edit-<%= p._id %>" class="modal fixed inset-0 z-50 hidden items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
+            <div class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[24px] border border-black/10 bg-white p-6 shadow-2xl sm:p-7">
+              <div class="flex items-center justify-between">
+                <h2 class="text-[18px] font-semibold">Edit Product</h2>
+                <button onclick="closeModals()" class="flex h-8 w-8 items-center justify-center rounded-full bg-fog text-sub hover:text-ink">&times;</button>
+              </div>
+              <form action="/admin/edit/<%= p._id %>" method="POST" class="mt-5 space-y-4" onsubmit="return validateProduct(this)">
+                <div>
+                  <label class="label">Product Name</label>
+                  <input name="name" required maxlength="120" class="field" value="<%= p.name %>" />
+                </div>
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  <div>
+                    <label class="label">Sale Price</label>
+                    <input name="price" required type="number" min="0" step="0.01" class="field" value="<%= p.price %>" />
+                  </div>
+                  <div>
+                    <label class="label">Compare-at (real former price)</label>
+                    <input name="compareAtPrice" type="number" min="0" step="0.01" class="field" value="<%= p.compareAtPrice ?? '' %>" placeholder="optional" />
+                  </div>
+                  <div>
+                    <label class="label">Stock</label>
+                    <input name="stock" required type="number" min="0" step="1" class="field" value="<%= p.stock %>" />
+                  </div>
+                </div>
+                <div>
+                  <label class="label">Image URL</label>
+                  <input name="imageUrl" required class="field" value="<%= p.imageUrl %>" />
+                </div>
+                <div>
+                  <label class="label">WED2C Affiliate Link</label>
+                  <input name="wed2cLink" required type="url" class="field" value="<%= p.wed2cLink %>" />
+                </div>
+                <div>
+                  <label class="label">Description</label>
+                  <textarea name="description" required maxlength="500" class="field min-h-[88px] resize-none"><%= p.description %></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-1">
+                  <button type="button" onclick="closeModals()" class="rounded-full px-5 py-2.5 text-[14px] font-medium text-sub hover:text-ink">Cancel</button>
+                  <button type="submit" class="rounded-full bg-azure px-6 py-2.5 text-[14px] font-medium text-white hover:bg-[#0077ed]">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+      </section>
+
+      <!-- ============ REVIEWS TAB ============ -->
+      <section id="tab-reviews" class="hidden">
+        <div class="mt-6 flex gap-3 rounded-2xl border border-azure/20 bg-azure/5 px-5 py-4 text-[13px] leading-relaxed text-ink/80">
+          <span>&#9432;</span>
+          <p>Publish only <strong>genuine customer reviews</strong>. Fabricated reviews violate FTC rules (16 CFR §465 — fines up to ~$51k each) and payment-processor terms; fake social proof is the fastest way to lose your PayPal/Stripe account.</p>
+        </div>
+
+        <div class="mt-5 rounded-2xl border border-black/10 bg-white p-6 sm:p-7">
+          <h2 class="text-[16px] font-semibold">Add a customer review</h2>
+          <form action="/admin/reviews/add" method="POST" class="mt-4 grid gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div><label class="label">Customer Name</label><input name="name" required class="field" placeholder="Brenda S." /></div>
+              <div><label class="label">Location</label><input name="location" required class="field" placeholder="Columbus, OH" /></div>
+              <div>
+                <label class="label">Rating</label>
+                <select name="rating" class="field"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label class="label">Product</label>
+                <select name="productId" class="field">
+                  <% products.forEach(function (p) { %><option value="<%= p._id %>"><%= p.name %></option><% }); %>
+                </select>
+              </div>
+              <label class="mt-6 flex items-center gap-2.5 text-[13px] text-ink/80">
+                <input type="checkbox" name="verified" checked class="h-4 w-4 rounded border-line text-azure focus:ring-azure" />
+                Verified purchase — tick only if they really bought it
+              </label>
+            </div>
+            <div>
+              <label class="label">Review Text (the customer's real words)</label>
+              <textarea name="text" required maxlength="600" class="field min-h-[88px] resize-none"></textarea>
+            </div>
+            <div>
+              <button type="submit" class="rounded-full bg-azure px-6 py-2.5 text-[14px] font-medium text-white hover:bg-[#0077ed]">Publish Review</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="mt-5 overflow-hidden rounded-2xl border border-black/10 bg-white">
+          <% if (reviews.length === 0) { %>
+          <p class="px-6 py-10 text-center text-[13px] text-sub">No reviews published yet.</p>
+          <% } %>
+          <% reviews.forEach(function (r) { %>
+          <div class="flex flex-col gap-3 border-b border-black/5 p-5 last:border-0 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+              <p class="text-[#ff9f0a]"><% for (var i = 0; i < 5; i++) { %><%= i < r.rating ? "★" : "☆" %><% } %>
+                <span class="ml-2 text-[13px] font-semibold text-ink"><%= r.name %></span>
+                <span class="text-[12px] text-sub">· <%= r.location %><%= r.verified ? " · ✓ verified" : "" %></span>
+              </p>
+              <p class="mt-1.5 line-clamp-2 max-w-2xl text-[13px] text-sub">"<%= r.text %>"</p>
+            </div>
+            <form action="/admin/reviews/delete/<%= r._id %>" method="POST" onsubmit="return confirm('Remove this review?');" class="shrink-0">
+              <button type="submit" class="rounded-full bg-red-50 px-3.5 py-1.5 text-[12px] font-medium text-red-500 hover:bg-red-100">Delete</button>
+            </form>
+          </div>
+          <% }); %>
+        </div>
+      </section>
+
+      <!-- ============ SETTINGS TAB ============ -->
+      <section id="tab-settings" class="hidden">
+        <div class="mt-6 max-w-xl rounded-2xl border border-black/10 bg-white p-6 sm:p-7">
+          <h2 class="text-[16px] font-semibold">Flash Sale Banner</h2>
+          <p class="mt-1.5 text-[13px] leading-relaxed text-sub">
+            The red banner and sticky mobile countdown point at one real end date stored in the database. It never
+            resets on refresh — when it hits zero, the banner simply disappears.
+          </p>
+          <form action="/admin/settings" method="POST" class="mt-5 space-y-5">
+            <label class="flex items-center gap-3 text-[14px] font-medium">
+              <input type="checkbox" name="saleEnabled" <%= settings.saleEnabled === "true" ? "checked" : "" %> class="h-5 w-5 rounded border-line text-azure focus:ring-azure" />
+              Show flash-sale banner
+            </label>
+            <div>
+              <label class="label">Sale ends at</label>
+              <input type="datetime-local" name="saleEnd" class="field" value="<%= new Date(settings.saleEnd).toISOString().slice(0, 16) %>" />
+            </div>
+            <button type="submit" class="rounded-full bg-azure px-6 py-2.5 text-[13px] font-medium text-white hover:bg-[#0077ed]">Save Settings</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Add modal -->
+    <div id="add-modal" class="modal fixed inset-0 z-50 hidden items-center justify-center bg-black/25 p-4 backdrop-blur-sm">
+      <div class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[24px] border border-black/10 bg-white p-6 shadow-2xl sm:p-7">
+        <div class="flex items-center justify-between">
+          <h2 class="text-[18px] font-semibold">Add New Product</h2>
+          <button onclick="closeModals()" class="flex h-8 w-8 items-center justify-center rounded-full bg-fog text-sub hover:text-ink">&times;</button>
+        </div>
+        <form action="/admin/add" method="POST" class="mt-5 space-y-4" onsubmit="return validateProduct(this)">
+          <div>
+            <label class="label">Product Name</label>
+            <input name="name" required maxlength="120" class="field" placeholder="Aurora Table Lamp" />
+          </div>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div>
+              <label class="label">Sale Price</label>
+              <input name="price" required type="number" min="0" step="0.01" class="field" placeholder="59.00" />
+            </div>
+            <div>
+              <label class="label">Compare-at (real former price)</label>
+              <input name="compareAtPrice" type="number" min="0" step="0.01" class="field" placeholder="84.00" />
+            </div>
+            <div>
+              <label class="label">Stock</label>
+              <input name="stock" required type="number" min="0" step="1" class="field" value="10" />
+            </div>
+          </div>
+          <div>
+            <label class="label">Image URL</label>
+            <input name="imageUrl" required class="field" placeholder="https://…" />
+          </div>
+          <div>
+            <label class="label">WED2C Affiliate Link</label>
+            <input name="wed2cLink" required type="url" class="field" placeholder="https://www.wed2c.com/p/…" />
+          </div>
+          <div>
+            <label class="label">Description</label>
+            <textarea name="description" required maxlength="500" class="field min-h-[88px] resize-none"></textarea>
+          </div>
+          <div class="flex justify-end gap-3 pt-1">
+            <button type="button" onclick="closeModals()" class="rounded-full px-5 py-2.5 text-[14px] font-medium text-sub hover:text-ink">Cancel</button>
+            <button type="submit" class="rounded-full bg-azure px-6 py-2.5 text-[14px] font-medium text-white hover:bg-[#0077ed]">Add Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(name) {
+        ["products", "reviews", "settings"].forEach(function (t) {
+          document.getElementById("tab-" + t).classList.toggle("hidden", t !== name);
+        });
+        document.querySelectorAll("[data-tab]").forEach(function (b) {
+          b.classList.toggle("tab-active", b.dataset.tab === name);
+        });
+      }
+      function openModal(id) {
+        closeModals();
+        var m = document.getElementById(id);
+        if (m) { m.classList.remove("hidden"); m.classList.add("flex"); }
+      }
+      function closeModals() {
+        document.querySelectorAll(".modal").forEach(function (m) { m.classList.add("hidden"); m.classList.remove("flex"); });
+      }
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModals(); });
+      document.querySelectorAll(".modal").forEach(function (m) {
+        m.addEventListener("click", function (e) { if (e.target === m) closeModals(); });
+      });
+      function validateProduct(f) {
+        var price = parseFloat(f.price.value);
+        if (isNaN(price) || price <= 0) { alert("Enter a valid price above 0."); return false; }
+        var cap = f.compareAtPrice.value.trim();
+        if (cap && (isNaN(parseFloat(cap)) || parseFloat(cap) <= price)) {
+          alert("Compare-at price must be higher than the sale price (or left blank)."); return false;
+        }
+        if (!/^https?:\/\//.test(f.wed2cLink.value)) { alert("WED2C link must start with http(s)://"); return false; }
+        return true;
+      }
+    </script>
+  </body>
+</html>

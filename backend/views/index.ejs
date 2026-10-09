@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ember Home — Objects for Calmer Spaces</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#1d1d1f", sub: "#6e6e73", fog: "#f5f5f7", line: "#d2d2d7",
+              azure: "#0071e3", blood: "#d70015",
+            },
+            fontFamily: { sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Inter", "Segoe UI", "sans-serif"] },
+          },
+        },
+      };
+    </script>
+    <style>
+      body { letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; }
+      @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+      .pulse-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+    </style>
+  </head>
+  <body class="bg-white text-ink">
+
+    <% var saleOn = settings.saleEnabled === "true" && new Date(settings.saleEnd).getTime() > Date.now(); %>
+
+    <!-- Flash-sale banner (real persisted end date — never resets on refresh) -->
+    <% if (saleOn) { %>
+    <div class="fixed inset-x-0 top-0 z-50 bg-blood text-white">
+      <div class="mx-auto flex max-w-5xl items-center justify-center gap-3 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] sm:text-xs">
+        <span>Flash Sale — up to 30% off</span>
+        <span class="hidden h-3.5 w-px bg-white/40 sm:block"></span>
+        <span class="tabular-nums normal-case tracking-normal">Ends in <span data-countdown="<%= settings.saleEnd %>">…</span></span>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Nav -->
+    <header class="fixed inset-x-0 z-40 border-b border-black/10 bg-white/70 backdrop-blur-xl" style="top: <%= saleOn ? '33px' : '0' %>">
+      <nav class="mx-auto flex h-12 max-w-5xl items-center justify-between px-5">
+        <a href="/" class="flex items-center gap-2">
+          <span class="flex h-6 w-6 items-center justify-center rounded-[7px] bg-ink text-[11px] font-bold text-white">E</span>
+          <span class="text-[13px] font-semibold">Ember Home</span>
+        </a>
+        <div class="hidden items-center gap-9 text-[12px] text-ink/80 md:flex">
+          <a href="#collection" class="transition hover:text-ink">Shop</a>
+          <a href="#reviews" class="transition hover:text-ink">Reviews</a>
+          <a href="/track" class="transition hover:text-ink">Track Order</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="mx-auto max-w-5xl px-5 pb-14 text-center" style="padding-top: <%= saleOn ? '9rem' : '7rem' %>">
+      <p class="text-[13px] font-semibold tracking-wide text-blood"><%= saleOn ? "Flash Sale — ends " + new Date(settings.saleEnd).toLocaleDateString("en-US", { weekday: "long" }) + " night" : "The Winter Edit" %></p>
+      <h1 class="mx-auto mt-3 max-w-3xl text-[42px] font-semibold leading-[1.05] tracking-tight sm:text-[64px]">
+        Calm, beautifully engineered.
+      </h1>
+      <p class="mx-auto mt-4 max-w-xl text-[17px] leading-relaxed text-sub sm:text-[19px]">
+        Six considered objects that make quiet rooms feel warmer — tracked shipping and 30-day returns on everything.
+      </p>
+      <a href="#collection" class="mt-5 inline-block text-[15px] text-azure hover:underline">Shop the collection &rsaquo;</a>
+    </section>
+
+    <!-- Product grid -->
+    <main id="collection" class="mx-auto max-w-5xl scroll-mt-24 px-5 pb-24">
+      <div class="flex items-end justify-between">
+        <h2 class="text-[28px] font-semibold tracking-tight sm:text-[36px]">The Collection.</h2>
+        <p class="pb-1 text-[13px] text-sub"><%= products.length %> objects · crossed-out prices are former selling prices</p>
+      </div>
+
+      <% if (products.length === 0) { %>
+      <div class="mt-10 rounded-[28px] border border-dashed border-line py-24 text-center">
+        <p class="text-[15px] font-medium">No products yet.</p>
+        <p class="mt-1 text-[13px] text-sub">Your curated collection will appear here soon.</p>
+      </div>
+      <% } %>
+
+      <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+        <% products.forEach(function (p) { %>
+        <% var soldOut = p.stock <= 0, low = !soldOut && p.stock <= 5; %>
+        <article class="group flex h-full flex-col">
+          <div class="relative aspect-square overflow-hidden rounded-[28px] bg-fog">
+            <img src="<%= p.imageUrl %>" alt="<%= p.name %>" loading="lazy"
+                 class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.045] <%= soldOut ? 'opacity-60' : '' %>" />
+            <% if (p.discountPct && !soldOut) { %>
+            <span class="absolute left-5 top-5 rounded-full bg-blood px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">−<%= p.discountPct %>%</span>
+            <% } %>
+            <% if (soldOut) { %>
+            <span class="absolute left-5 top-5 rounded-full bg-ink px-3 py-1 text-[11px] font-bold text-white">Sold out</span>
+            <% } %>
+          </div>
+
+          <div class="flex flex-1 flex-col px-1.5 pt-5">
+            <h3 class="text-[17px] font-semibold"><%= p.name %></h3>
+            <p class="mt-1.5 line-clamp-2 text-[14px] leading-relaxed text-sub"><%= p.description %></p>
+
+            <p class="mt-3 flex items-baseline gap-2">
+              <span class="text-[16px] font-bold <%= p.discountPct ? 'text-blood' : 'text-ink' %>">$<%= Number(p.price).toFixed(2) %></span>
+              <% if (p.compareAtPrice && p.compareAtPrice > p.price) { %>
+              <span class="text-[13px] text-sub line-through">$<%= Number(p.compareAtPrice).toFixed(2) %></span>
+              <% } %>
+            </p>
+
+            <% if (soldOut) { %>
+            <span class="mt-4 inline-flex w-full cursor-not-allowed items-center justify-center rounded-full bg-black/10 px-5 py-3 text-[14px] font-medium text-sub">Notify Me When Back</span>
+            <% } else { %>
+            <a href="<%= p.wed2cLink %>" rel="sponsored"
+               class="mt-4 inline-flex w-full items-center justify-center gap-1 rounded-full bg-azure px-5 py-3 text-[15px] font-medium text-white transition hover:bg-[#0077ed] active:scale-[0.98]">
+              Buy Now &nearr;
+            </a>
+            <% } %>
+
+            <!-- Real stock line — the number you set in /admin -->
+            <p class="mt-2.5 flex items-center justify-center gap-1.5 text-[12px] font-medium">
+              <% if (soldOut) { %>
+              <span class="text-sub">Restocking soon</span>
+              <% } else if (low) { %>
+              <span class="pulse-dot inline-block h-2 w-2 rounded-full bg-blood"></span>
+              <span class="text-blood">Low stock — only <%= p.stock %> left at this price</span>
+              <% } else { %>
+              <span class="inline-block h-2 w-2 rounded-full bg-[#248a3d]"></span>
+              <span class="text-[#248a3d]">In stock — ships within 24 hours</span>
+              <% } %>
+            </p>
+
+            <!-- Honest trust row (factual policies — no unearned third-party seals) -->
+            <div class="mt-3 flex items-center justify-center gap-3 border-t border-black/5 pt-3 text-[10px] font-medium text-sub">
+              <span>&#128274; Secure checkout</span><span>&#128230; Tracked shipping</span><span>&#8617; 30-day returns</span>
+            </div>
+            <p class="mt-1.5 text-center text-[10px] text-sub/70">Visa · Mastercard · PayPal — via WED2C</p>
+          </div>
+        </article>
+        <% }); %>
+      </div>
+    </main>
+
+    <!-- Reviews — only genuine customer feedback is ever published -->
+    <section id="reviews" class="border-t border-black/10 bg-fog/50">
+      <div class="mx-auto max-w-5xl scroll-mt-24 px-5 py-16 sm:py-20">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 class="text-[28px] font-semibold tracking-tight sm:text-[36px]">What customers say.</h2>
+            <p class="mt-2 max-w-lg text-[14px] leading-relaxed text-sub">Every review comes from a real post-purchase email. We publish the good and the bad — nothing is invented.</p>
+          </div>
+          <a href="mailto:reviews@emberhome.co?subject=My%20review" class="rounded-full border border-ink px-5 py-2 text-[13px] font-medium transition hover:bg-ink hover:text-white">Share your experience</a>
+        </div>
+
+        <% if (reviews.length === 0) { %>
+        <div class="mt-10 rounded-[28px] border border-dashed border-line bg-white py-16 text-center">
+          <p class="text-[15px] font-semibold">Reviews are coming in with the first orders.</p>
+          <p class="mx-auto mt-1.5 max-w-sm text-[13px] text-sub">Bought something? Your honest words help the next shopper more than any ad ever could.</p>
+        </div>
+        <% } else { %>
+        <div class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <% reviews.forEach(function (r) { %>
+          <figure class="flex h-full flex-col rounded-[24px] border border-black/10 bg-white p-6">
+            <div class="text-[#ff9f0a]">
+              <% for (var i = 0; i < 5; i++) { %><%= i < r.rating ? "★" : "☆" %><% } %>
+            </div>
+            <blockquote class="mt-3 flex-1 text-[14px] leading-relaxed text-ink/90">"<%= r.text %>"</blockquote>
+            <figcaption class="mt-5 border-t border-black/5 pt-4">
+              <p class="text-[13px] font-semibold"><%= r.name %> <span class="font-normal text-sub">· <%= r.location %></span></p>
+              <% if (r.verified) { %><p class="mt-1 text-[11px] font-medium text-[#248a3d]">&#10003; Verified purchase</p><% } %>
+            </figcaption>
+          </figure>
+          <% }); %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-black/10 bg-fog">
+      <div class="mx-auto max-w-5xl px-5 py-10">
+        <div class="flex flex-col gap-4 border-b border-black/10 pb-6 text-[12px] text-sub sm:flex-row sm:items-center sm:justify-between">
+          <p class="font-semibold text-ink">Ember Home</p>
+          <div class="flex flex-wrap gap-x-6 gap-y-2">
+            <a href="/shipping" class="hover:text-ink">Shipping Policy</a>
+            <a href="/refunds" class="hover:text-ink">Refund Policy</a>
+            <a href="/track" class="hover:text-ink">Track My Order</a>
+          </div>
+        </div>
+        <p class="pt-6 text-[12px] text-sub">&copy; <%= new Date().getFullYear() %> Ember Home · Checkout completed securely with WED2C</p>
+      </div>
+    </footer>
+
+    <!-- Sticky mobile sale bar -->
+    <% if (saleOn) { %>
+    <div id="sticky-bar" class="fixed inset-x-3 bottom-3 z-50 hidden md:!hidden">
+      <div class="flex items-center justify-between gap-3 rounded-full bg-blood py-2.5 pl-5 pr-2.5 text-white shadow-2xl">
+        <div class="leading-tight">
+          <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-white/80">Flash Sale ends in</p>
+          <p class="text-[15px] font-bold tabular-nums" data-countdown="<%= settings.saleEnd %>">…</p>
+        </div>
+        <a href="#collection" class="rounded-full bg-white px-5 py-2.5 text-[13px] font-bold text-blood">Shop now</a>
+      </div>
+    </div>
+    <% } %>
+
+    <script>
+      // Countdowns all point at the same real persisted end date.
+      var nodes = document.querySelectorAll("[data-countdown]");
+      function tick() {
+        var now = Date.now();
+        nodes.forEach(function (n) {
+          var diff = Math.max(0, new Date(n.dataset.countdown).getTime() - now);
+          var d = Math.floor(diff / 86400000),
+              h = Math.floor((diff % 86400000) / 3600000),
+              m = Math.floor((diff % 3600000) / 60000),
+              s = Math.floor((diff % 60000) / 1000);
+          var p = function (x) { return String(x).padStart(2, "0"); };
+          n.textContent = d > 0 ? d + "d : " + p(h) + "h : " + p(m) + "m" : p(h) + ":" + p(m) + ":" + p(s);
+        });
+      }
+      tick(); setInterval(tick, 1000);
+
+      // Sticky bar appears after scrolling past the hero, hides near the footer.
+      var bar = document.getElementById("sticky-bar");
+      if (bar) {
+        addEventListener("scroll", function () {
+          var nearFooter = innerHeight + scrollY > document.body.scrollHeight - 380;
+          bar.classList.toggle("hidden", !(scrollY > 420 && !nearFooter));
+        }, { passive: true });
+      }
+    </script>
+  </body>
+</html>

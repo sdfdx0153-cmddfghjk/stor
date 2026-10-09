@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= page.title %> — Ember Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { ink: "#1d1d1f", sub: "#6e6e73", fog: "#f5f5f7", azure: "#0071e3" },
+            fontFamily: { sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Inter", "Segoe UI", "sans-serif"] },
+          },
+        },
+      };
+    </script>
+    <style>body { letter-spacing: -0.011em; -webkit-font-smoothing: antialiased; }</style>
+  </head>
+  <body class="min-h-screen bg-white text-ink">
+    <header class="border-b border-black/10 bg-white/80 backdrop-blur-xl">
+      <div class="mx-auto flex h-12 max-w-5xl items-center justify-between px-5">
+        <a href="/" class="flex items-center gap-2">
+          <span class="flex h-6 w-6 items-center justify-center rounded-[7px] bg-ink text-[11px] font-bold text-white">E</span>
+          <span class="text-[13px] font-semibold">Ember Home</span>
+        </a>
+        <a href="/" class="text-[12px] text-sub transition hover:text-ink">&larr; Back to store</a>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-3xl px-5 py-16">
+      <h1 class="text-[34px] font-semibold tracking-tight sm:text-[44px]"><%= page.title %></h1>
+      <div class="mt-10 space-y-9">
+        <% page.sections.forEach(function (s) { %>
+        <section class="border-b border-black/5 pb-9 last:border-0">
+          <h2 class="text-[17px] font-semibold"><%= s[0] %></h2>
+          <p class="mt-2.5 text-[15px] leading-relaxed text-sub"><%= s[1] %></p>
+        </section>
+        <% }); %>
+      </div>
+
+      <div class="mt-4 flex flex-col items-start justify-between gap-4 rounded-[24px] bg-fog p-6 sm:flex-row sm:items-center">
+        <p class="text-[14px] text-sub">Still stuck? Real humans reply within 24 hours.</p>
+        <a href="mailto:warmth@emberhome.co" class="rounded-full bg-ink px-5 py-2.5 text-[13px] font-medium text-white transition hover:opacity-85">warmth@emberhome.co</a>
+      </div>
+
+      <div class="mt-10 flex gap-6 text-[12px] text-sub">
+        <a href="/shipping" class="<%= current === 'shipping' ? 'font-semibold text-ink' : 'hover:text-ink' %>">Shipping Policy</a>
+        <a href="/refunds" class="<%= current === 'refunds' ? 'font-semibold text-ink' : 'hover:text-ink' %>">Refund Policy</a>
+        <a href="/track" class="<%= current === 'track' ? 'font-semibold text-ink' : 'hover:text-ink' %>">Track My Order</a>
+      </div>
+    </main>
+
+    <footer class="border-t border-black/10 bg-fog">
+      <p class="mx-auto max-w-5xl px-5 py-6 text-[12px] text-sub">&copy; <%= new Date().getFullYear() %> Ember Home. All rights reserved.</p>
+    </footer>
+  </body>
+</html>
